@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+dist/
+.env
+productiq.db
+*.log
+.pytest_cache/
+.DS_Store
