@@ -194,12 +194,18 @@ export default function Upload({
     setErrorMsg(null);
     try {
       const file = await fetchSampleCSV();
+      if (!file) {
+        throw new Error('Could not retrieve demo dataset.');
+      }
       setSelectedFile(file);
       setActivePresetId(null);
+      // Run the exact same schema analysis pipeline as manual file selection
       await triggerFileSchemaAnalysis(file);
     } catch (err) {
-      console.warn('Direct file fetch fallback to preset analysis', err);
-      await triggerPresetSchemaAnalysis('demo_1000');
+      console.error('[ProductIQ] Demo loading failed:', err);
+      setErrorMsg(err.message || 'Demo dataset could not be loaded. Please check the backend connection.');
+      setWorkflowStep('select');
+      setIsAnalyzing(false);
     }
   };
 

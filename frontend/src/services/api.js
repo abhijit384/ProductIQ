@@ -79,15 +79,51 @@ export async function processSampleDataset(datasetId, mapping = null) {
 }
 
 export async function fetchSampleCSV() {
-  const res = await fetch(`${API_URL}/api/sample`);
-  if (!res.ok) {
-    const fallback = await fetch(`${API_URL}/api/download-demo-sample`);
-    if (!fallback.ok) throw new Error('Failed to download demo sample dataset');
-    const blob = await fallback.blob();
-    return new File([blob], 'sample_products_1000.csv', { type: 'text/csv' });
+  const sampleFilename = "Unihack_ Sample Dataset - Input(2).csv";
+
+  // 1. Try backend /api/sample endpoint
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    const res = await fetch(`${API_URL}/api/sample`, { signal: controller.signal });
+    clearTimeout(timer);
+    if (res.ok) {
+      const blob = await res.blob();
+      return new File([blob], sampleFilename, { type: 'text/csv' });
+    }
+  } catch (err) {
+    console.warn('[ProductIQ] Backend /api/sample fetch failed, trying static / fallback...', err);
   }
-  const blob = await res.blob();
-  return new File([blob], 'sample_products_1000.csv', { type: 'text/csv' });
+
+  // 2. Try frontend bundled static asset
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    const res = await fetch('/sample_products_1000.csv', { signal: controller.signal });
+    clearTimeout(timer);
+    if (res.ok) {
+      const blob = await res.blob();
+      return new File([blob], sampleFilename, { type: 'text/csv' });
+    }
+  } catch (err) {
+    console.warn('[ProductIQ] Static sample fetch failed, trying download endpoint fallback...', err);
+  }
+
+  // 3. Try backend /api/download-demo-sample fallback
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    const fallback = await fetch(`${API_URL}/api/download-demo-sample`, { signal: controller.signal });
+    clearTimeout(timer);
+    if (fallback.ok) {
+      const blob = await fallback.blob();
+      return new File([blob], sampleFilename, { type: 'text/csv' });
+    }
+  } catch (err) {
+    console.error('[ProductIQ] All sample fetch strategies failed:', err);
+  }
+
+  throw new Error('Failed to retrieve demo sample dataset. Please check your backend connection.');
 }
 
 export async function loadDemoDataset() {
