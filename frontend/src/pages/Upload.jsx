@@ -32,7 +32,8 @@ import {
   analyzeSampleDataset,
   processSampleDataset,
   subscribeJobEvents,
-  fetchSampleCSV
+  fetchSampleCSV,
+  getDemoSampleUrl
 } from '../services/api';
 
 const PIPELINE_STAGES = [
@@ -164,17 +165,23 @@ export default function Upload({
     setErrorMsg(null);
     try {
       const res = await analyzeSchema(file);
-      const analysis = res.analysis;
+      const analysis = res?.analysis || res?.schema || res || {};
       setSchemaAnalysis(analysis);
       
       const initialMapping = {};
-      analysis.columns.forEach((col) => {
-        initialMapping[col.original_column] = col.canonical_field;
+      const cols = Array.isArray(analysis.columns) ? analysis.columns : (Array.isArray(analysis.input_columns) ? analysis.input_columns : []);
+      cols.forEach((col) => {
+        const orig = col.original_column || col.name || col.column;
+        const canonical = col.canonical_field || col.mapped_field || 'unmapped';
+        if (orig) {
+          initialMapping[orig] = canonical;
+        }
       });
       setUserMapping(initialMapping);
       setWorkflowStep('review_schema');
     } catch (err) {
-      setErrorMsg(err.message || 'AI Schema Analysis failed. Please try again.');
+      console.error('[ProductIQ] Schema analysis failed:', err);
+      setErrorMsg(err.message || 'Schema analysis failed. Check the backend connection.');
       setWorkflowStep('select');
     } finally {
       setIsAnalyzing(false);
@@ -204,16 +211,22 @@ export default function Upload({
     setErrorMsg(null);
     try {
       const res = await analyzeSampleDataset(presetId);
-      const analysis = res.analysis;
+      const analysis = res?.analysis || res?.schema || res || {};
       setSchemaAnalysis(analysis);
       
       const initialMapping = {};
-      analysis.columns.forEach((col) => {
-        initialMapping[col.original_column] = col.canonical_field;
+      const cols = Array.isArray(analysis.columns) ? analysis.columns : (Array.isArray(analysis.input_columns) ? analysis.input_columns : []);
+      cols.forEach((col) => {
+        const orig = col.original_column || col.name || col.column;
+        const canonical = col.canonical_field || col.mapped_field || 'unmapped';
+        if (orig) {
+          initialMapping[orig] = canonical;
+        }
       });
       setUserMapping(initialMapping);
       setWorkflowStep('review_schema');
     } catch (err) {
+      console.error('[ProductIQ] Preset analysis failed:', err);
       setErrorMsg(err.message || 'Failed to analyze preset dataset.');
       setWorkflowStep('select');
     } finally {
@@ -508,7 +521,7 @@ export default function Upload({
                   </button>
 
                   <a
-                    href="/api/download-demo-sample"
+                    href={getDemoSampleUrl()}
                     download="productiq_sample_products_1000.csv"
                     className="btn-secondary w-full py-2"
                   >
@@ -703,7 +716,7 @@ export default function Upload({
               </div>
 
               <div className="divide-y divide-[#E4E8F0] dark:divide-[rgba(255,255,255,0.06)]">
-                {schemaAnalysis.columns.map((col, idx) => {
+                {(schemaAnalysis.columns || []).map((col, idx) => {
                   const currentSelected = userMapping[col.original_column] || col.canonical_field;
                   const isHighConf = col.confidence >= 0.90;
                   const isMedConf = col.confidence >= 0.75 && col.confidence < 0.90;

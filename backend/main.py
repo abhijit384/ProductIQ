@@ -40,13 +40,31 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware for React frontend
+# CORS configuration for Local Development & Deployed Vercel / Production Frontends
+allowed_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5200",
+    "http://127.0.0.1:5200",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+env_origins = os.getenv("ALLOWED_ORIGINS") or os.getenv("FRONTEND_URL", "")
+if env_origins:
+    for orig in env_origins.split(","):
+        cleaned = orig.strip()
+        if cleaned and cleaned not in allowed_origins:
+            allowed_origins.append(cleaned)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition"],
 )
 
 # Global Exception Handler

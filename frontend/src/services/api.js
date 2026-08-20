@@ -1,13 +1,15 @@
-const API_BASE = '/api';
+const DEFAULT_BACKEND_URL = 'https://productiq-backend-4n4k.onrender.com';
+export const API_URL = (import.meta.env.VITE_API_URL || DEFAULT_BACKEND_URL).replace(/\/$/, '');
+export const API_BASE = `${API_URL}/api`;
 
 export async function fetchHealth() {
-  const res = await fetch(`${API_BASE}/health`);
+  const res = await fetch(`${API_URL}/api/health`);
   if (!res.ok) throw new Error('Health check failed');
   return res.json();
 }
 
 export async function fetchAIStatus() {
-  const res = await fetch(`${API_BASE}/ai/status`);
+  const res = await fetch(`${API_URL}/api/ai/status`);
   if (!res.ok) throw new Error('Failed to fetch AI engine status');
   return res.json();
 }
@@ -15,7 +17,7 @@ export async function fetchAIStatus() {
 export async function analyzeSchema(file) {
   const formData = new FormData();
   formData.append('file', file);
-  const res = await fetch(`${API_BASE}/schema/analyze`, {
+  const res = await fetch(`${API_URL}/api/schema/analyze`, {
     method: 'POST',
     body: formData
   });
@@ -32,7 +34,7 @@ export async function uploadCatalog(file, mapping = null) {
   if (mapping) {
     formData.append('mapping', JSON.stringify(mapping));
   }
-  const res = await fetch(`${API_BASE}/upload`, {
+  const res = await fetch(`${API_URL}/api/upload`, {
     method: 'POST',
     body: formData
   });
@@ -44,13 +46,13 @@ export async function uploadCatalog(file, mapping = null) {
 }
 
 export async function fetchSampleDatasets() {
-  const res = await fetch(`${API_BASE}/sample-datasets`);
+  const res = await fetch(`${API_URL}/api/sample-datasets`);
   if (!res.ok) throw new Error('Failed to fetch sample datasets');
   return res.json();
 }
 
 export async function analyzeSampleDataset(datasetId) {
-  const res = await fetch(`${API_BASE}/sample-datasets/${datasetId}/analyze`, {
+  const res = await fetch(`${API_URL}/api/sample-datasets/${datasetId}/analyze`, {
     method: 'POST'
   });
   if (!res.ok) {
@@ -65,7 +67,7 @@ export async function processSampleDataset(datasetId, mapping = null) {
   if (mapping) {
     formData.append('mapping', JSON.stringify(mapping));
   }
-  const res = await fetch(`${API_BASE}/sample-datasets/${datasetId}/process`, {
+  const res = await fetch(`${API_URL}/api/sample-datasets/${datasetId}/process`, {
     method: 'POST',
     body: formData
   });
@@ -77,9 +79,9 @@ export async function processSampleDataset(datasetId, mapping = null) {
 }
 
 export async function fetchSampleCSV() {
-  const res = await fetch(`${API_BASE}/sample`);
+  const res = await fetch(`${API_URL}/api/sample`);
   if (!res.ok) {
-    const fallback = await fetch(`${API_BASE}/download-demo-sample`);
+    const fallback = await fetch(`${API_URL}/api/download-demo-sample`);
     if (!fallback.ok) throw new Error('Failed to download demo sample dataset');
     const blob = await fallback.blob();
     return new File([blob], 'sample_products_1000.csv', { type: 'text/csv' });
@@ -93,7 +95,7 @@ export async function loadDemoDataset() {
 }
 
 export async function fetchJobStatus(jobId) {
-  const res = await fetch(`${API_BASE}/jobs/${jobId}`);
+  const res = await fetch(`${API_URL}/api/jobs/${jobId}`);
   if (!res.ok) throw new Error('Failed to fetch job status');
   return res.json();
 }
@@ -160,7 +162,7 @@ export function subscribeJobEvents(jobId, onEvent, onError) {
 
   // 1. Server-Sent Events (SSE) listener
   try {
-    eventSource = new EventSource(`${API_BASE}/jobs/${jobId}/events`);
+    eventSource = new EventSource(`${API_URL}/api/jobs/${jobId}/events`);
     eventSource.onmessage = (event) => {
       try {
         const parsed = JSON.parse(event.data);
@@ -195,14 +197,14 @@ export function subscribeJobEvents(jobId, onEvent, onError) {
 }
 
 export async function fetchDashboard(jobId) {
-  const url = jobId ? `${API_BASE}/dashboard?job_id=${jobId}` : `${API_BASE}/dashboard`;
+  const url = jobId ? `${API_URL}/api/dashboard?job_id=${jobId}` : `${API_URL}/api/dashboard`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch dashboard metrics');
   return res.json();
 }
 
 export async function fetchAnalytics(jobId) {
-  const url = jobId ? `${API_BASE}/analytics?job_id=${jobId}` : `${API_BASE}/analytics`;
+  const url = jobId ? `${API_URL}/api/analytics?job_id=${jobId}` : `${API_URL}/api/analytics`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch analytics');
   return res.json();
@@ -215,19 +217,19 @@ export async function fetchProducts(params = {}) {
       query.append(k, v);
     }
   });
-  const res = await fetch(`${API_BASE}/products?${query.toString()}`);
+  const res = await fetch(`${API_URL}/api/products?${query.toString()}`);
   if (!res.ok) throw new Error('Failed to fetch products');
   return res.json();
 }
 
 export async function fetchProductDetail(productId) {
-  const res = await fetch(`${API_BASE}/products/${productId}`);
+  const res = await fetch(`${API_URL}/api/products/${productId}`);
   if (!res.ok) throw new Error('Failed to fetch product details');
   return res.json();
 }
 
 export async function fetchQualityMetrics(jobId) {
-  const url = jobId ? `${API_BASE}/quality?job_id=${jobId}` : `${API_BASE}/quality`;
+  const url = jobId ? `${API_URL}/api/quality?job_id=${jobId}` : `${API_URL}/api/quality`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch quality metrics');
   return res.json();
@@ -241,7 +243,7 @@ export async function fetchValidationIssues(params = {}) {
       query.append(k, v);
     }
   });
-  const res = await fetch(`${API_BASE}/validation-issues?${query.toString()}`);
+  const res = await fetch(`${API_URL}/api/validation-issues?${query.toString()}`);
   if (!res.ok) throw new Error('Failed to fetch validation issues');
   return res.json();
 }
@@ -260,34 +262,34 @@ export async function fetchConflicts(jobIdOrParams, status, severity) {
     if (status) query.append('status', status);
     if (severity) query.append('severity', severity);
   }
-  const res = await fetch(`${API_BASE}/conflicts?${query.toString()}`);
+  const res = await fetch(`${API_URL}/api/conflicts?${query.toString()}`);
   if (!res.ok) throw new Error('Failed to fetch conflicts');
   return res.json();
 }
 
 export async function fetchConflictSummary(jobId) {
-  const url = jobId ? `${API_BASE}/conflicts/summary?job_id=${jobId}` : `${API_BASE}/conflicts/summary`;
+  const url = jobId ? `${API_URL}/api/conflicts/summary?job_id=${jobId}` : `${API_URL}/api/conflicts/summary`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch conflict summary');
   return res.json();
 }
 
 export async function fetchDataGaps(jobId) {
-  const url = jobId ? `${API_BASE}/conflicts/data-gaps?job_id=${jobId}` : `${API_BASE}/conflicts/data-gaps`;
+  const url = jobId ? `${API_URL}/api/conflicts/data-gaps?job_id=${jobId}` : `${API_URL}/api/conflicts/data-gaps`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch data gaps');
   return res.json();
 }
 
 export async function fetchReconciliationOpportunities(jobId) {
-  const url = jobId ? `${API_BASE}/conflicts/reconciliation-opportunities?job_id=${jobId}` : `${API_BASE}/conflicts/reconciliation-opportunities`;
+  const url = jobId ? `${API_URL}/api/conflicts/reconciliation-opportunities?job_id=${jobId}` : `${API_URL}/api/conflicts/reconciliation-opportunities`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch reconciliation opportunities');
   return res.json();
 }
 
 export async function resolveConflict(conflictId, action, notes) {
-  const res = await fetch(`${API_BASE}/conflicts/${conflictId}/resolve`, {
+  const res = await fetch(`${API_URL}/api/conflicts/${conflictId}/resolve`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action, notes })
@@ -300,13 +302,13 @@ export async function fetchDuplicates(jobId, status) {
   const query = new URLSearchParams();
   if (jobId) query.append('job_id', jobId);
   if (status) query.append('status', status);
-  const res = await fetch(`${API_BASE}/duplicates?${query.toString()}`);
+  const res = await fetch(`${API_URL}/api/duplicates?${query.toString()}`);
   if (!res.ok) throw new Error('Failed to fetch duplicate clusters');
   return res.json();
 }
 
 export async function resolveDuplicateGroup(groupId, action, notes) {
-  const res = await fetch(`${API_BASE}/duplicates/${groupId}/resolve`, {
+  const res = await fetch(`${API_URL}/api/duplicates/${groupId}/resolve`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action, notes })
@@ -316,21 +318,21 @@ export async function resolveDuplicateGroup(groupId, action, notes) {
 }
 
 export async function fetchEnrichmentCenter(jobId) {
-  const url = jobId ? `${API_BASE}/enrichment?job_id=${jobId}` : `${API_BASE}/enrichment`;
+  const url = jobId ? `${API_URL}/api/enrichment?job_id=${jobId}` : `${API_URL}/api/enrichment`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch AI enrichment center');
   return res.json();
 }
 
 export async function retryAIEnrichment(jobId) {
-  const url = jobId ? `${API_BASE}/enrichment/retry?job_id=${jobId}` : `${API_BASE}/enrichment/retry`;
+  const url = jobId ? `${API_URL}/api/enrichment/retry?job_id=${jobId}` : `${API_URL}/api/enrichment/retry`;
   const res = await fetch(url, { method: 'POST' });
   if (!res.ok) throw new Error('Failed to re-trigger AI enrichment');
   return res.json();
 }
 
 export async function fetchSources(jobId) {
-  const url = jobId ? `${API_BASE}/sources?job_id=${jobId}` : `${API_BASE}/sources`;
+  const url = jobId ? `${API_URL}/api/sources?job_id=${jobId}` : `${API_URL}/api/sources`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch source intelligence');
   return res.json();
@@ -339,9 +341,13 @@ export const fetchSourcesOverview = fetchSources;
 
 export function getExportUrl(type, jobId, format = 'csv') {
   if (type === 'products') {
-    return `${API_BASE}/download?job_id=${jobId || ''}&format=${format}`;
+    return `${API_URL}/api/download?job_id=${jobId || ''}&format=${format}`;
   }
-  return `${API_BASE}/export/${type}?job_id=${jobId || ''}`;
+  return `${API_URL}/api/export/${type}?job_id=${jobId || ''}`;
+}
+
+export function getDemoSampleUrl() {
+  return `${API_URL}/api/download-demo-sample`;
 }
 
 export async function downloadExportOutput(jobId, format = 'csv') {
@@ -349,7 +355,7 @@ export async function downloadExportOutput(jobId, format = 'csv') {
   if (jobId) params.append('job_id', jobId);
   params.append('format', format);
 
-  const res = await fetch(`${API_BASE}/download?${params.toString()}`);
+  const res = await fetch(`${API_URL}/api/download?${params.toString()}`);
   if (!res.ok) {
     let errorDetail = 'Failed to generate catalog export';
     try {
