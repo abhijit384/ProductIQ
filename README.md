@@ -197,12 +197,6 @@ Run the automated test suite verifying unit normalization, duplicate detection, 
 
 ## 8. License
 
-## License
-
-MIT License
-
-## 8. License
-
 MIT License
 
 ProductIQ is an enterprise-grade hackathon prototype built with Google Gemini and FastAPI.
