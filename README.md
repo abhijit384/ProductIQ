@@ -6,6 +6,21 @@
 
 ---
 
+## Why ProductIQ?
+
+ProductIQ transforms sparse industrial product data into trusted, structured, commerce-ready intelligence.
+
+**Input**  
+Sparse product catalog
+
+**Processing**  
+Schema Detection → Normalization → Deduplication → Validation → Gemini AI Enrichment
+
+**Output**  
+Structured product intelligence + quality insights + export-ready catalog
+
+---
+
 ## 1. Key Features & Capabilities
 
 - **High-Throughput File Ingestion**: Instant parsing and schema autodetection for CSV (with dialect detection) and XLSX formats.
@@ -169,7 +184,7 @@ Run the automated test suite verifying unit normalization, duplicate detection, 
 ## 7. Hackathon Live Demo Walkthrough
 
 1. **Open Frontend**: Navigate to `http://localhost:5173`.
-2. **Load Demo Dataset**: Click the luminous **"Load 1,000 Demo"** button in the topbar or upload `data/sample_products_1000.csv`.
+2. **Load Demo Dataset**: Upload the supplied sample CSV or use the demo dataset included in the repository.
 3. **Watch Real-Time Pipeline**: Observe live Server-Sent Events (SSE) tracking Upload $\rightarrow$ Parsing $\rightarrow$ Normalization $\rightarrow$ Deduplication $\rightarrow$ Validation $\rightarrow$ AI Enrichment $\rightarrow$ Database Commit.
 4. **Explore Overview Dashboard**: Review calculated KPIs (Products Processed, Quality Score, Missing Attributes, Conflicts, Duplicates, AI Confidence) and charts.
 5. **Inspect Product Intelligence**: Filter by category, sort by quality score, search model numbers, and click any row to open the detailed intelligence view.
@@ -182,4 +197,12 @@ Run the automated test suite verifying unit normalization, duplicate detection, 
 
 ## 8. License
 
-ProductIQ Enterprise Hackathon Prototype — Built with Google Gemini & FastAPI.
+## License
+
+MIT License
+
+## 8. License
+
+MIT License
+
+ProductIQ is an enterprise-grade hackathon prototype built with Google Gemini and FastAPI.
